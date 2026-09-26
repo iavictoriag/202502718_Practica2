@@ -1,3 +1,6 @@
+
+/**almacena al piloto y sus atributos
+ * */
 package com.mycompany._practica2;
 
 public class Piloto {
