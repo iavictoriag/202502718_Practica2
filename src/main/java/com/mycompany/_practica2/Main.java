@@ -98,6 +98,7 @@ public class Main {
             return;
         }
         for (int i = 0; i < listaPilotos.size(); i++) {
+            
             Piloto p = listaPilotos.get(i);
             System.out.println((i + 1) + ". Piloto: " + p.getNombre() + " | Puntaje Maximo: " + p.getPuntajeMaximo());
         }

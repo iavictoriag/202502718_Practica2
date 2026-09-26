@@ -8,6 +8,7 @@ public class Piloto {
         this.nombre = nombre;
         this.puntajeMaximo = 0; //empiez desde 0 puntos
     }
+    //nombre
     public String getNombre(){
         return nombre;
     }
