@@ -1,5 +1,5 @@
 
-/**almacena al piloto y sus atributos
+/**almacena al piloto y sus atributoss
  * */
 package com.mycompany._practica2;
 
