@@ -45,10 +45,10 @@ public class Main {
                         System.out.println("\n¡Gracias por jugar! Saliendo del sistema...");
                         break;
                     default:
-                        System.out.println("\n[!] Opcion no valida, ingrese un numero del 1 al 4.");
+                        System.out.println("\nOpcion no valida, ingrese un numero del 1 al 4.");
                 }
             } else {
-                System.out.println("\n[!] Debe ingresar un numero valido.");
+                System.out.println("\nDebe ingresar un numero valido.");
                 scanner.next();
             }
         } while (opcion != 4);
@@ -62,7 +62,7 @@ public class Main {
         String nombre = scanner.nextLine().trim();
         
         if (nombre.isEmpty()) {
-            System.out.println("[!] El nombre no puede estar vacio.");
+            System.out.println("El nombre no puede estar vacio.");
             return;
         }
         
@@ -82,13 +82,13 @@ public class Main {
             Piloto nuevoPiloto = new Piloto(nombre);
             listaPilotos.add(nuevoPiloto);
             pilotoActual = nuevoPiloto;
-            System.out.println("¡Piloto registrado y seleccionado con éxito: " + nombre + "!");
+            System.out.println("¡Piloto registrado y seleccionado con exito: " + nombre + "!");
         }
     }
     
     public static void iniciarJuego(Scanner scanner) {
         if (pilotoActual == null) {
-            System.out.println("\n[!] Debe crear o seleccionar un piloto antes de iniciar la partida.");
+            System.out.println("\n Debe crear o seleccionar un piloto antes de iniciar la partida.");
             return;
         }
         
@@ -115,7 +115,7 @@ public class Main {
             System.out.println("+-------------------------------------------------------+");
             System.out.println("|                QUETZAL SPACE DEFENDER                 |");
             System.out.println("+-------------------------------------------------------+");
-            System.out.println("|  Vidas: " + vidas + " [❤️]  |  Puntaje: " + puntajeActual + " pts  |  Dist: " + (pasos * 10) + "m  |");
+            System.out.println("|  Vidas: " + vidas + " [❤️]  |  Puntaje: " + puntajeActual + " pts  |  Distancia: " + (pasos * 10) + "m  |");
             System.out.println("+-------------------------------------------------------+");
             System.out.println("                      [ ZONA ESPACIAL ]                  ");
             
@@ -142,7 +142,7 @@ public class Main {
             System.out.println("     CARRIL [1]            CARRIL [2]            CARRIL [3]     ");
             System.out.println("=========================================================");
             
-            System.out.print("ontroles -> Mover [1, 2, 3] | Disparar [d] | Salir [s]: ");
+            System.out.print("controles -> Mover [1, 2, 3] | Disparar [d] | Salir [s]: ");
             String entrada = scanner.nextLine().trim().toLowerCase();
             
             if (entrada.equals("s")) {
@@ -167,13 +167,11 @@ public class Main {
                     System.out.println("\nEsquivaste el peligro con exito. +10 pts.");
                 }
             } else {
-                System.out.println("\n[!] Comando no válido. Usa 1, 2 o 3 para moverte, 'd' para disparar, o 's' para salir.");
+                System.out.println("\n[!] Comando no valido. Usa 1, 2 o 3 para moverte, 'd' para disparar, o 's' para salir.");
             }
         }
-        
-        System.out.println("\n========================================");
-        System.out.println("             FIN DE LA PARTIDA          ");
-        System.out.println("========================================");
+
+        System.out.println("\n--- FIN DE LA PARTIDA ---");
         if (puntajeActual > pilotoActual.getPuntajeMaximo()) {
             pilotoActual.setPuntajeMaximo(puntajeActual);
             System.out.println("¡Nuevo racord maximo alcanzado: " + puntajeActual + " pts!");
@@ -183,9 +181,7 @@ public class Main {
     }
     
     public static void mostrarPuntajes() {
-        System.out.println("\n========================================");
-        System.out.println("          PUNTAJES Y REPORTES           ");
-        System.out.println("========================================");
+        System.out.println("\n--- PUNTAJES Y REPORTES ---");
         if (listaPilotos.isEmpty()) {
             System.out.println("No hay pilotos registrados en el sistema todavia.");
             return;
@@ -194,6 +190,5 @@ public class Main {
             Piloto p = listaPilotos.get(i);
             System.out.println((i + 1) + ". Piloto: " + p.getNombre() + " | Record Maximo: " + p.getPuntajeMaximo() + " pts");
         }
-        System.out.println("========================================");
     }
 }
