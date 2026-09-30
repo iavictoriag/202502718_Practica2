@@ -40,6 +40,10 @@ class PanelJuego extends JPanel implements ActionListener {
     private int obstaculoX = 600;
     private int obstaculoY = 250;
     
+    //disparo
+    private int disparoX = -100;
+    private int disparoY = -100;
+    private boolean disparoActivo = false;
 
     public PanelJuego() {
         // Fondo de color del juego
@@ -60,9 +64,13 @@ class PanelJuego extends JPanel implements ActionListener {
                 if (tecla == KeyEvent.VK_DOWN && naveY < 500) {
                     naveY += 20;
                 }
-                // Disparar con la barra de espaci0
+                // Disparar con la barra de espacio
                 if (tecla == KeyEvent.VK_SPACE) {
-                    puntaje += 5;
+                    if (!disparoActivo) { // Solo dispara si no hay otro láser en pantalla
+                        disparoX = naveX + 35; //desde la punta de la nave
+                        disparoY = naveY;      // al centro de la nave
+                        disparoActivo = true;
+                    }
                 }
             }
         });
@@ -88,17 +96,23 @@ class PanelJuego extends JPanel implements ActionListener {
         g.setColor(Color.GRAY);
         g.drawLine(30, 110, 800, 110);
 
-        // la nave 
+        //laser
+        if (disparoActivo) {
+            g.setColor(Color.YELLOW);
+            g.fillRect(disparoX, disparoY, 12, 4);
+        }
+
+        //la nave
         g.setColor(Color.CYAN);
         int[] xPuntos = {naveX, naveX + 35, naveX};
         int[] yPuntos = {naveY + 15, naveY, naveY - 15};
         g.fillPolygon(xPuntos, yPuntos, 3);
 
-        // el obstáculo 
+        //el obstaculo
         g.setColor(new Color(255, 0, 127)); 
         g.fillOval(obstaculoX, obstaculoY, 40, 40);
         
-        //  estrellas de fondo 
+        //las estrellas de fondo 
         g.setColor(Color.WHITE); 
         g.fillRect(200, 150, 2, 2); g.fillRect(234, 765, 2, 3); g.fillRect(190, 431, 2, 3); g.fillRect(334, 121, 2, 2);
         g.fillRect(500, 380, 3, 3); g.fillRect(432, 567, 3, 2); g.fillRect(222, 315, 3, 2); g.fillRect(234, 113, 3, 3);
@@ -111,20 +125,39 @@ class PanelJuego extends JPanel implements ActionListener {
         g.fillRect(153, 455, 3, 2); g.fillRect(123, 321, 2, 3); g.fillRect(211, 112, 2, 3); g.fillRect(234, 631, 3, 2);
     }
 
-    // El Timer llama a este método automáticamente para mover el obstáculo
+    //verifica colisiones 
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Mover el obstáculo hacia la izquierda
+        //obstáculo a la izquierda
         obstaculoX -= 4;
 
-        // Si el obstáculo se pasa, regresa a la derecha con otra altura
+        //disparo a la derecha y verificar si choca
+        if (disparoActivo) {
+            disparoX += 10; // Velocidad del láser
+
+            //choque
+            if (disparoX >= obstaculoX && disparoX <= obstaculoX + 40 &&
+                disparoY >= obstaculoY && disparoY <= obstaculoY + 40) {
+                
+                puntaje += 15;// Suma puntos
+                obstaculoX = 850;//regenerarlo a la derecha
+                obstaculoY = (int) (Math.random() * 400) + 120;
+                disparoActivo = false;  //desaparece el láser
+            }
+
+            // Si el disparo sale de la pantalla a la derechacse desactiva
+            if (disparoX > 850) {
+                disparoActivo = false;
+            }
+        }
+
+        //obstáculo pasa la pantalla y no se destruye
         if (obstaculoX < -50) {
             obstaculoX = 850;
             obstaculoY = (int) (Math.random() * 400) + 120;
-            puntaje += 10; // Sumar puntos al esquivar
+            puntaje += 10; //sumar puntos al esquivar
         }
 
-        // repite el juego
         repaint();
     }
 }
