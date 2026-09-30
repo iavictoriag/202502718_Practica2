@@ -36,9 +36,13 @@ class PanelJuego extends JPanel implements ActionListener {
     private int naveY = 250;
     private int puntaje = 0;
     
-    // Posición del asteroide
+    // Posición del asteroide 1
     private int obstaculoX = 600;
     private int obstaculoY = 250;
+    
+    // Posición del  asteroide 2
+    private int obstaculo2X = 900;
+    private int obstaculo2Y = 380;
     
     //disparo
     private int disparoX = -100;
@@ -111,6 +115,7 @@ class PanelJuego extends JPanel implements ActionListener {
         //el obstaculo
         g.setColor(new Color(255, 0, 127)); 
         g.fillOval(obstaculoX, obstaculoY, 40, 40);
+        g.fillOval(obstaculo2X, obstaculo2Y, 40, 40);
         
         //las estrellas de fondo 
         g.setColor(Color.WHITE); 
@@ -128,34 +133,49 @@ class PanelJuego extends JPanel implements ActionListener {
     //verifica colisiones 
     @Override
     public void actionPerformed(ActionEvent e) {
-        //obstáculo a la izquierda
-        obstaculoX -= 4;
+       //a laizquierda
+        obstaculoX -= 4;//asteroide 1
+        obstaculo2X -= 5; // asteroide 2
 
-        //disparo a la derecha y verificar si choca
-        if (disparoActivo) {
-            disparoX += 10; // Velocidad del láser
-
-            //choque
-            if (disparoX >= obstaculoX && disparoX <= obstaculoX + 40 &&
-                disparoY >= obstaculoY && disparoY <= obstaculoY + 40) {
-                
-                puntaje += 15;// Suma puntos
-                obstaculoX = 850;//regenerarlo a la derecha
-                obstaculoY = (int) (Math.random() * 400) + 120;
-                disparoActivo = false;  //desaparece el láser
-            }
-
-            // Si el disparo sale de la pantalla a la derechacse desactiva
-            if (disparoX > 850) {
-                disparoActivo = false;
-            }
-        }
-
-        //obstáculo pasa la pantalla y no se destruye
+        //reiniciar obstáculo 1 si pasa de los borde
         if (obstaculoX < -50) {
             obstaculoX = 850;
             obstaculoY = (int) (Math.random() * 400) + 120;
-            puntaje += 10; //sumar puntos al esquivar
+            puntaje += 5;
+        }
+        //reiniciar obstáculo 2 si pasa del borde
+        if (obstaculo2X < -50) {
+            obstaculo2X = 999;
+            obstaculo2Y = (int) (Math.random() * 400) + 120;
+            puntaje += 5;
+        }
+
+        // moviientos y choque
+        if (disparoActivo) {
+            disparoX += 65;
+
+            //choque con asteroide 1
+            if (disparoX >= obstaculoX && disparoX <= obstaculoX + 40 &&
+                disparoY >= obstaculoY && disparoY <= obstaculoY + 40) {
+                puntaje += 15;
+                obstaculoX = 850;
+                obstaculoY = (int) (Math.random() * 400) + 120;
+                disparoActivo = false;
+            }
+
+            //choque con asteroide 2
+            if (disparoX >= obstaculo2X && disparoX <= obstaculo2X + 40 &&
+                disparoY >= obstaculo2Y && disparoY <= obstaculo2Y + 40) {
+                puntaje += 15;
+                obstaculo2X = 990;
+                obstaculo2Y = (int) (Math.random() * 400) + 120;
+                disparoActivo = false;
+            }
+
+            //quitar el láser si sale de la pantalla
+            if (disparoX > 850) {
+                disparoActivo = false;
+            }
         }
 
         repaint();
