@@ -1,8 +1,7 @@
 package com.mycompany._practica2;
 
-import java.util.Scanner;
-import java.util.Vector;
-import java.util.Random;
+import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 
 /**
  * Clase principal del sistema Quetzal Space Defender.
@@ -10,185 +9,115 @@ import java.util.Random;
  */
 public class Main {
     
-    private static Vector<Piloto> listaPilotos = new Vector<>();
+    // Arreglo para almacenar a los pilotos
+    private static Piloto[] listaPilotos = new Piloto[50];
+    private static int totalPilotos = 0;
     private static Piloto pilotoActual = null;
     
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         int opcion = 0;
         
         do {
-            System.out.println("\n========================================");
-            System.out.println("         QUETZAL SPACE DEFENDER         ");
-            System.out.println("========================================");
-            System.out.println("1. Crear piloto o seleccionar piloto.");
-            System.out.println("2. Jugar");
-            System.out.println("3. Puntajes y Reportes");
-            System.out.println("4. Salir");
-            System.out.print("Elige una opcion: ");
-            
-            if (scanner.hasNextInt()) {
-                opcion = scanner.nextInt();
-                scanner.nextLine();
-                
-                switch (opcion) {
-                    case 1:
-                        menuCrearPiloto(scanner);
-                        break;
-                    case 2:
-                        iniciarJuego(scanner);
-                        break;
-                    case 3:
-                        mostrarPuntajes();
-                        break;
-                    case 4:
-                        System.out.println("\n¡Gracias por jugar! Saliendo del sistema...");
-                        break;
-                    default:
-                        System.out.println("\nOpcion no valida, ingrese un numero del 1 al 4.");
-                }
-            } else {
-                System.out.println("\nDebe ingresar un numero valido.");
-                scanner.next();
+            String menu = "========================================\n" +
+                          "         QUETZAL SPACE DEFENDER         \n" +
+                          "========================================\n" +
+                          "1. Crear piloto o seleccionar piloto.\n" +
+                          "2. Jugar\n" +
+                          "3. Puntajes y Reportes\n" +
+                          "4. Salir\n\n" +
+                          "Elige una opción:";
+        
+            // Para cuando cierren la ventana se salga del programa
+            String entrada = JOptionPane.showInputDialog(null, menu, "Menú Principal", JOptionPane.QUESTION_MESSAGE);
+            if (entrada == null) {
+                break;            
             }
+            
+            // si le dan ok
+            if (entrada.equals("")) {
+                continue;
+            }
+            
+            opcion = Integer.parseInt(entrada);
+            
+            // Menú principal usando switch
+            switch (opcion) {
+                case 1:
+                    menuCrearPiloto();
+                    break;
+                case 2:
+                    if (pilotoActual == null) {
+                        JOptionPane.showMessageDialog(null, "¡Debes crear o seleccionar un piloto!", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        iniciarJuego();
+                    }
+                    break;
+                case 3:
+                    mostrarPuntajes();
+                    break;
+                case 4:
+                    JOptionPane.showMessageDialog(null, "¡Gracias por jugar! Saliendo del juego...");
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Opcion no valida. Intenta de nuevo.", "Error", JOptionPane.ERROR_MESSAGE);
+                    break;
+            }     
         } while (opcion != 4);
-        
-        scanner.close();
     }
     
-    public static void menuCrearPiloto(Scanner scanner) {
-        System.out.println("\n--- GESTION DE PILOTOS ---");
-        System.out.print("Ingrese el nombre del piloto: ");
-        String nombre = scanner.nextLine().trim();
+    //registrar o buscar el piloto 
+    //JOptionPane como Scanner
+    public static void menuCrearPiloto() {
+        String nombre = JOptionPane.showInputDialog(null, "Ingrese el nombre del piloto:", "Gestion de Pilotos", JOptionPane.QUESTION_MESSAGE);
         
-        if (nombre.isEmpty()) {
-            System.out.println("El nombre no puede estar vacio.");
-            return;
-        }
-        
-        Piloto pilotoEncontrado = null;
-        for (int i = 0; i < listaPilotos.size(); i++) {
-            Piloto p = listaPilotos.get(i);
-            if (p.getNombre().equalsIgnoreCase(nombre)) {
-                pilotoEncontrado = p;
-                break;
-            }
-        }
-        
-        if (pilotoEncontrado != null) {
-            pilotoActual = pilotoEncontrado;
-            System.out.println("Piloto encontrado y seleccionado: " + pilotoActual.getNombre());
-        } else {
-            Piloto nuevoPiloto = new Piloto(nombre);
-            listaPilotos.add(nuevoPiloto);
-            pilotoActual = nuevoPiloto;
-            System.out.println("¡Piloto registrado y seleccionado con exito: " + nombre + "!");
-        }
-    }
-    
-    public static void iniciarJuego(Scanner scanner) {
-        if (pilotoActual == null) {
-            System.out.println("\n Debe crear o seleccionar un piloto antes de iniciar la partida.");
-            return;
-        }
-        
-        System.out.println("\n--- INICIANDO PARTIDA ---");
-        System.out.println("Piloto a bordo: " + pilotoActual.getNombre());
-        
-        int puntajeActual = 0;
-        int vidas = 3;
-        boolean jugando = true;
-        int pasos = 0;
-        int posicionNave = 2; // 1: Izquierda, 2: Centro, 3: Derecha
-        Random random = new Random();
-        
-        while (jugando && vidas > 0) {
-            pasos++;
-            int carrilObstaculo = random.nextInt(3) + 1;
+        if (nombre != null && !nombre.equals("")) {
+            nombre = nombre.trim();
+            Piloto pilotoEncontrado = null;
             
-            // Simular limpieza de pantalla limpia en consola
-            for (int i = 0; i < 3; i++) {
-                System.out.println();
+            // Buscamos si el piloto ya existe
+            for (int i = 0; i < totalPilotos; i++) {
+                if (listaPilotos[i].getNombre().equalsIgnoreCase(nombre)) {
+                    pilotoEncontrado = listaPilotos[i];
+                    break;
+                }
             }
             
-            // --- INTERFAZ GRÁFICA RENOVADA ---
-            System.out.println("+-------------------------------------------------------+");
-            System.out.println("|                QUETZAL SPACE DEFENDER                 |");
-            System.out.println("+-------------------------------------------------------+");
-            System.out.println("|  Vidas: " + vidas + " [❤️]  |  Puntaje: " + puntajeActual + " pts  |  Distancia: " + (pasos * 10) + "m  |");
-            System.out.println("+-------------------------------------------------------+");
-            System.out.println("                      [ ZONA ESPACIAL ]                  ");
-            
-            // Fila Superior (Obstáculos)
-            String o1 = (carrilObstaculo == 1) ? "  [ ⚡ ASTEROIDE ]  " : "  [     ---     ]  ";
-            String o2 = (carrilObstaculo == 2) ? "  [ ⚡ ASTEROIDE ]  " : "  [     ---     ]  ";
-            String o3 = (carrilObstaculo == 3) ? "  [ ⚡ ASTEROIDE ]  " : "  [     ---     ]  ";
-            
-            System.out.println("+-------------------+ +-------------------+ +-------------------+");
-            System.out.println("|" + o1 + "|" + o2 + "|" + o3 + "|");
-            System.out.println("+-------------------+ +-------------------+ +-------------------+");
-            System.out.println("|         |         |         |         |         |         |");
-            System.out.println("|         |         |         |         |         |  <-- Laser [d]");
-            System.out.println("|         |         |         |         |         |         |");
-            
-            // Fila Inferior (Nave del Jugador)
-            String n1 = (posicionNave == 1) ? "    [  Q  ]    " : "    [     ]         ";
-            String n2 = (posicionNave == 2) ? "    [  Q  ]     " : "    [     ]         ";
-            String n3 = (posicionNave == 3) ? "    [  Q  ]     " : "    [     ]         ";
-            
-            System.out.println("+-------------------+ +-------------------+ +-------------------+");
-            System.out.println("|" + n1 + "|" + n2 + "|" + n3 + "|");
-            System.out.println("+-------------------+ +-------------------+ +-------------------+");
-            System.out.println("     CARRIL [1]            CARRIL [2]            CARRIL [3]     ");
-            System.out.println("=========================================================");
-            
-            System.out.print("controles -> Mover [1, 2, 3] | Disparar [d] | Salir [s]: ");
-            String entrada = scanner.nextLine().trim().toLowerCase();
-            
-            if (entrada.equals("s")) {
-                System.out.println("\nSaliendo de la partida actual...");
-                jugando = false;
-            } else if (entrada.equals("d")) {
-                puntajeActual += 15;
-                if (posicionNave == carrilObstaculo) {
-                    System.out.println("\n¡IMPACTO! Destruiste el asteroide con tu laser. +15 pts.");
-                } else {
-                    System.out.println("\nDisparaste al espacio vacio. ¡Zona despejada!");
-                }
-            } else if (entrada.equals("1") || entrada.equals("2") || entrada.equals("3")) {
-                posicionNave = Integer.parseInt(entrada);
-                puntajeActual += 10;
-                
-                if (posicionNave == carrilObstaculo) {
-                    System.out.println("\n ¡COLISION! Te moviste al carril " + carrilObstaculo + " y chocaste con el asteroide.");
-                    vidas--;
-                    System.out.println("Has perdido 1 vida. Vidas restantes: " + vidas);
-                } else {
-                    System.out.println("\nEsquivaste el peligro con exito. +10 pts.");
-                }
+            // Si ya existía, lo seleccionamos
+            if (pilotoEncontrado != null) {
+                pilotoActual = pilotoEncontrado;
+                JOptionPane.showMessageDialog(null, "Piloto seleccionado : " + pilotoActual.getNombre() + "!");
             } else {
-                System.out.println("\n[!] Comando no valido. Usa 1, 2 o 3 para moverte, 'd' para disparar, o 's' para salir.");
+                // Si no existe se crea y se guarda en el arreglo
+                if (totalPilotos < listaPilotos.length) {
+                    Piloto nuevoPiloto = new Piloto(nombre);
+                    listaPilotos[totalPilotos] = nuevoPiloto;
+                    totalPilotos++;
+                    pilotoActual = nuevoPiloto;
+                    JOptionPane.showMessageDialog(null, "¡Nuevo piloto creado y seleccionado: " + nombre + "!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "El arreglo de pilotos esta lleno.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
-
-        System.out.println("\n--- FIN DE LA PARTIDA ---");
-        if (puntajeActual > pilotoActual.getPuntajeMaximo()) {
-            pilotoActual.setPuntajeMaximo(puntajeActual);
-            System.out.println("¡Nuevo racord maximo alcanzado: " + puntajeActual + " pts!");
-        } else {
-            System.out.println("Puntaje obtenido en esta partida: " + puntajeActual + " pts");
-        }
     }
-    
+
+    // iniciar juego 
+    public static void iniciarJuego() {
+        JOptionPane.showMessageDialog(null, "Iniciando partida para: " + pilotoActual.getNombre());
+    }
+
+    // mostrar puntajes
     public static void mostrarPuntajes() {
-        System.out.println("\n--- PUNTAJES Y REPORTES ---");
-        if (listaPilotos.isEmpty()) {
-            System.out.println("No hay pilotos registrados en el sistema todavia.");
+        if (totalPilotos == 0) {
+            JOptionPane.showMessageDialog(null, "Todavía no hay pilotos registrados.", "Reportes", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        for (int i = 0; i < listaPilotos.size(); i++) {
-            Piloto p = listaPilotos.get(i);
-            System.out.println((i + 1) + ". Piloto: " + p.getNombre() + " | Record Maximo: " + p.getPuntajeMaximo() + " pts");
+        
+        String reporte = "=== REPORTE DE PILOTOS Y PUNTAJES ===\n\n";
+        for (int i = 0; i < totalPilotos; i++) {
+            reporte = reporte + (i + 1) + ". " + listaPilotos[i].getNombre() + " - Récord: " + listaPilotos[i].getPuntajeMaximo() + " pts\n";
         }
+        
+        JOptionPane.showMessageDialog(null, reporte, "Puntajes", JOptionPane.INFORMATION_MESSAGE);
     }
 }
