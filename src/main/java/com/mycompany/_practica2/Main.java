@@ -2,6 +2,7 @@ package com.mycompany._practica2;
 
 import javax.swing.JOptionPane;
 import javax.swing.JFrame;
+import javax.swing.JFrame;
 
 /**
  * Clase principal del sistema Quetzal Space Defender.
@@ -103,10 +104,11 @@ public class Main {
 
     // iniciar juego 
     public static void iniciarJuego() {
-        JOptionPane.showMessageDialog(null, "Iniciando partida para: " + pilotoActual.getNombre());
+        JuegoVentana ventana = new JuegoVentana();
+        ventana.setVisible(true);
     }
-
-    // mostrar puntajes
+    
+    // Mostrar puntajes
     public static void mostrarPuntajes() {
         if (totalPilotos == 0) {
             JOptionPane.showMessageDialog(null, "Todavía no hay pilotos registrados.", "Reportes", JOptionPane.INFORMATION_MESSAGE);
@@ -119,5 +121,5 @@ public class Main {
         }
         
         JOptionPane.showMessageDialog(null, reporte, "Puntajes", JOptionPane.INFORMATION_MESSAGE);
-    }
-}
+    } 
+} 
