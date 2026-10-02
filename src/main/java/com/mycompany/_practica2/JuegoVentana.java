@@ -14,20 +14,20 @@ public class JuegoVentana extends JDialog {
         setTitle("Quetzal Space Defender");
         setSize(850, 600);
         
-        //pausa el Main hasta que se cierre el juego
+        // pausa el Main hasta que se cierre el juego
         setModal(true);
         
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        //  panel del juego  con los gráficos 
+        // panel del juego con los gráficos 
         PanelJuego panel = new PanelJuego();
         add(panel);
     }
 }
 
-//  gráficos del juego
+// gráficos del juego
 class PanelJuego extends JPanel implements ActionListener {
     
     // Variables 
@@ -37,20 +37,29 @@ class PanelJuego extends JPanel implements ActionListener {
     private int puntaje = 0;
     private int vidas = 3;
     
-    // Posición del asteroide 1
-    private int obstaculoX = 600;
-    private int obstaculoY = 250;
+    // Posición del enemigo 1
+    private int enemigoX = 600;
+    private int enemigoY = 250;
     
-    // Posición del  asteroide 2
-    private int obstaculo2X = 900;
-    private int obstaculo2Y = 380;
+    // Posición del enemigo 2
+    private int enemigo2X = 900;
+    private int enemigo2Y = 380;
     
-    //disparo
+    // disparo
     private int disparoX = -100;
     private int disparoY = -100;
     private boolean disparoActivo = false;
+    
+    // e disparo con dificultad 
+    private long ultimoDisparo = 0;
+    private int cadenciaPermitida = 1000; // 1 segundo es Normal
 
     public PanelJuego() {
+        // Obtener la cadencia del piloto actual si existe
+        if (Main.pilotoActual != null) {
+            cadenciaPermitida = Main.pilotoActual.getCadenciaDisparo();
+        }
+
         // Fondo de color del juego
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -69,12 +78,14 @@ class PanelJuego extends JPanel implements ActionListener {
                 if (tecla == KeyEvent.VK_DOWN && naveY < 500) {
                     naveY += 20;
                 }
-                // Disparar con la barra de espacio
+                // Disparar con la barra de espacio respetando la cadencia de la nave
                 if (tecla == KeyEvent.VK_SPACE) {
-                    if (!disparoActivo) { // Solo dispara si no hay otro láser en pantalla
-                        disparoX = naveX + 35; //desde la punta de la nave
+                    long tiempoActual = System.currentTimeMillis();
+                    if (!disparoActivo && (tiempoActual - ultimoDisparo >= cadenciaPermitida)) {
+                        disparoX = naveX + 35; // desde la punta de la nave
                         disparoY = naveY;      // al centro de la nave
                         disparoActivo = true;
+                        ultimoDisparo = tiempoActual; // Registramos el momento del disparo
                     }
                 }
             }
@@ -90,36 +101,41 @@ class PanelJuego extends JPanel implements ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        //  texto en la parte superior
+        // texto en la parte superior (mostrando también la nave y dificultad si hay piloto)
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 14));
         g.drawString("Quetzal Space Defender", 30, 40);
         g.drawString("Puntaje: " + puntaje, 30, 70);
         g.drawString("Vidas: " + vidas, 160, 70);
+        
+        if (Main.pilotoActual != null) {
+            g.drawString("Piloto: " + Main.pilotoActual.getNombre() + " (" + Main.pilotoActual.getTipoNave() + ")", 300, 70);
+        }
+        
         g.drawString("↑ ↓ Mover   |   ESPACIO: Disparar", 30, 95);
 
         // Línea divisoria
         g.setColor(Color.GRAY);
         g.drawLine(30, 110, 800, 110);
 
-        //laser
+        // laser
         if (disparoActivo) {
             g.setColor(Color.YELLOW);
             g.fillRect(disparoX, disparoY, 12, 4);
         }
 
-        //la nave
+        // la nave
         g.setColor(Color.CYAN);
         int[] xPuntos = {naveX, naveX + 35, naveX};
         int[] yPuntos = {naveY + 15, naveY, naveY - 15};
         g.fillPolygon(xPuntos, yPuntos, 3);
 
-        //el obstaculo
+        // los enemigos 
         g.setColor(new Color(255, 0, 127)); 
-        g.fillOval(obstaculoX, obstaculoY, 40, 40);
-        g.fillOval(obstaculo2X, obstaculo2Y, 40, 40);
+        g.fillRect(enemigoX, enemigoY, 40, 40);
+        g.fillRect(enemigo2X, enemigo2Y, 40, 40);
         
-        //las estrellas de fondo 
+        // las estrellas de fondo 
         g.setColor(Color.WHITE); 
         g.fillRect(200, 150, 2, 2); g.fillRect(234, 765, 2, 3); g.fillRect(190, 431, 2, 3); g.fillRect(334, 121, 2, 2);
         g.fillRect(500, 380, 3, 3); g.fillRect(432, 567, 3, 2); g.fillRect(222, 315, 3, 2); g.fillRect(234, 113, 3, 3);
@@ -132,80 +148,88 @@ class PanelJuego extends JPanel implements ActionListener {
         g.fillRect(153, 455, 3, 2); g.fillRect(123, 321, 2, 3); g.fillRect(211, 112, 2, 3); g.fillRect(234, 631, 3, 2);
     }
 
-    //verifica colisiones 
+    // verifica colisiones 
     @Override
     public void actionPerformed(ActionEvent e) {
-       //a laizquierda
-        obstaculoX -= 4;//asteroide 1
-        obstaculo2X -= 5; // asteroide 2
+        // a la izquierda
+        enemigoX -= 4; // enemigo 1
+        enemigo2X -= 5; // enemigo 2
 
-        //reiniciar obstáculo 1 si pasa de los borde
-        if (obstaculoX < -50) {
-            obstaculoX = 850;
-            obstaculoY = (int) (Math.random() * 400) + 120;
+        // reiniciar enemigo 1 si pasa de los bordes
+        if (enemigoX < -50) {
+            enemigoX = 850;
+            enemigoY = (int) (Math.random() * 400) + 120;
             puntaje += 5;
         }
-        //reiniciar obstáculo 2 si pasa del borde
-        if (obstaculo2X < -50) {
-            obstaculo2X = 999;
-            obstaculo2Y = (int) (Math.random() * 400) + 120;
+        // reiniciar enemigo 2 si pasa del borde
+        if (enemigo2X < -50) {
+            enemigo2X = 999;
+            enemigo2Y = (int) (Math.random() * 400) + 120;
             puntaje += 5;
         }
         
         // vida
         Rectangle rectNave = new Rectangle(naveX, naveY - 15, 35, 30);
-        Rectangle rectObs1 = new Rectangle(obstaculoX, obstaculoY, 40, 40);
-        Rectangle rectObs2 = new Rectangle(obstaculo2X, obstaculo2Y, 40, 40);
+        Rectangle rectObs1 = new Rectangle(enemigoX, enemigoY, 40, 40);
+        Rectangle rectObs2 = new Rectangle(enemigo2X, enemigo2Y, 40, 40);
         
-        // Si choca con  asteroide 1
+        // Si choca con enemigo 1
         if (rectNave.intersects(rectObs1)) {
             vidas--;
-            obstaculoX = 850; // para que no quite vidas consecutivas por error
-            obstaculoY = (int) (Math.random() * 400) + 120;
+            enemigoX = 850; // para que no quite vidas consecutivas por error
+            enemigoY = (int) (Math.random() * 400) + 120;
         }
 
-        // Si choca con asteroide 2
+        // Si choca con enemigo 2
         if (rectNave.intersects(rectObs2)) {
             vidas--;
-            obstaculo2X = 900;
-            obstaculo2Y = (int) (Math.random() * 400) + 120;
+            enemigo2X = 900;
+            enemigo2Y = (int) (Math.random() * 400) + 120;
         }
 
         // muerte
         if (vidas <= 0) {
             timer.stop(); // Detiene el bucle del juego
+    
+            // guarda el punteo del piloto
+            if (Main.pilotoActual != null) {
+                if (puntaje > Main.pilotoActual.getPuntajeMaximo()) {
+                    Main.pilotoActual.setPuntajeMaximo(puntaje); // actualiza el maximo
+                }
+            }
+
             JOptionPane.showMessageDialog(this, "¡Moriste! Fin del juego.", "Game Over", JOptionPane.WARNING_MESSAGE);
-            
-            //regresa x al menú principal
+    
+            // regresa al menú principal
             Window ventanaPadre = SwingUtilities.getWindowAncestor(this);
             if (ventanaPadre != null) {
                 ventanaPadre.dispose();
             }
         }
 
-        // moviientos y choque
+        // movimientos y choque del disparo
         if (disparoActivo) {
             disparoX += 65;
 
-            //choque con asteroide 1
-            if (disparoX >= obstaculoX && disparoX <= obstaculoX + 40 &&
-                disparoY >= obstaculoY && disparoY <= obstaculoY + 40) {
+            // choque con enemigo 1
+            if (disparoX >= enemigoX && disparoX <= enemigoX + 40 &&
+                disparoY >= enemigoY && disparoY <= enemigoY + 40) {
                 puntaje += 15;
-                obstaculoX = 850;
-                obstaculoY = (int) (Math.random() * 400) + 120;
+                enemigoX = 850;
+                enemigoY = (int) (Math.random() * 400) + 120;
                 disparoActivo = false;
             }
 
-            //choque con asteroide 2
-            if (disparoX >= obstaculo2X && disparoX <= obstaculo2X + 40 &&
-                disparoY >= obstaculo2Y && disparoY <= obstaculo2Y + 40) {
+            // choque con enemigo 2
+            if (disparoX >= enemigo2X && disparoX <= enemigo2X + 40 &&
+                disparoY >= enemigo2Y && disparoY <= enemigo2Y + 40) {
                 puntaje += 15;
-                obstaculo2X = 990;
-                obstaculo2Y = (int) (Math.random() * 400) + 120;
+                enemigo2X = 990;
+                enemigo2Y = (int) (Math.random() * 400) + 120;
                 disparoActivo = false;
             }
 
-            //quitar el láser si sale de la pantalla
+            // quitar el láser si sale de la pantalla
             if (disparoX > 850) {
                 disparoActivo = false;
             }
