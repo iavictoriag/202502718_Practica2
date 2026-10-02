@@ -35,6 +35,7 @@ class PanelJuego extends JPanel implements ActionListener {
     private int naveX = 80;
     private int naveY = 250;
     private int puntaje = 0;
+    private int vidas = 3;
     
     // Posición del asteroide 1
     private int obstaculoX = 600;
@@ -94,6 +95,7 @@ class PanelJuego extends JPanel implements ActionListener {
         g.setFont(new Font("Arial", Font.BOLD, 14));
         g.drawString("Quetzal Space Defender", 30, 40);
         g.drawString("Puntaje: " + puntaje, 30, 70);
+        g.drawString("Vidas: " + vidas, 160, 70);
         g.drawString("↑ ↓ Mover   |   ESPACIO: Disparar", 30, 95);
 
         // Línea divisoria
@@ -148,6 +150,37 @@ class PanelJuego extends JPanel implements ActionListener {
             obstaculo2X = 999;
             obstaculo2Y = (int) (Math.random() * 400) + 120;
             puntaje += 5;
+        }
+        
+        // vida
+        Rectangle rectNave = new Rectangle(naveX, naveY - 15, 35, 30);
+        Rectangle rectObs1 = new Rectangle(obstaculoX, obstaculoY, 40, 40);
+        Rectangle rectObs2 = new Rectangle(obstaculo2X, obstaculo2Y, 40, 40);
+        
+        // Si choca con  asteroide 1
+        if (rectNave.intersects(rectObs1)) {
+            vidas--;
+            obstaculoX = 850; // para que no quite vidas consecutivas por error
+            obstaculoY = (int) (Math.random() * 400) + 120;
+        }
+
+        // Si choca con asteroide 2
+        if (rectNave.intersects(rectObs2)) {
+            vidas--;
+            obstaculo2X = 900;
+            obstaculo2Y = (int) (Math.random() * 400) + 120;
+        }
+
+        // muerte
+        if (vidas <= 0) {
+            timer.stop(); // Detiene el bucle del juego
+            JOptionPane.showMessageDialog(this, "¡Moriste! Fin del juego.", "Game Over", JOptionPane.WARNING_MESSAGE);
+            
+            //regresa x al menú principal
+            Window ventanaPadre = SwingUtilities.getWindowAncestor(this);
+            if (ventanaPadre != null) {
+                ventanaPadre.dispose();
+            }
         }
 
         // moviientos y choque
