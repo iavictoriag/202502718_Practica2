@@ -152,7 +152,7 @@ class PanelJuego extends JPanel implements ActionListener {
         g.fillOval(quaffleX, quaffleY, 20, 20);
 
         // Snitch  
-        g.setColor(Color.WHITE);
+        g.setColor(new Color(0, 255, 128));
         g.fillOval(snitchX, snitchY, 15, 15);
 
         g.setColor(Color.GRAY);
@@ -252,7 +252,19 @@ class PanelJuego extends JPanel implements ActionListener {
         // Si choca con la Snitch 
         if (rectNave.intersects(rectSnitch)) {
             puntaje += 50;
-            vidas++; // Vida extra  
+            vidas++; // Vida extra 
+            
+            // Elimina y reinicia al enemigo 1
+            enemigoX = 850;
+            enemigoY = (int) (Math.random() * 400) + 120;
+            puntaje += 15; // puntos extra 
+
+            // Elimina y einicia al enemigo 2
+            enemigo2X = 990;
+            enemigo2Y = (int) (Math.random() * 400) + 120;
+            puntaje += 15; // puntos extras
+
+            // Reinicia el Snitch 
             snitchX = 1400;
             snitchY = (int) (Math.random() * 400) + 120;
         }
