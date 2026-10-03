@@ -50,14 +50,22 @@ class PanelJuego extends JPanel implements ActionListener {
     private int disparoY = -100;
     private boolean disparoActivo = false;
     
-    // e disparo con dificultad 
+    // El disparo con dificultad 
     private long ultimoDisparo = 0;
-    private int cadenciaPermitida = 1000; // 1 segundo es Normal
+    private int intervalo = 1000; // 1 segundo es Normal
+    
+    // Premios y Obstáculos ---
+    private int quaffleX = 1000, quaffleY = (int)(Math.random() * 400) + 120;
+    private int snitchX = 1400, snitchY = (int)(Math.random() * 400) + 120;
+    private int bludgerX = 1200, bludgerY = (int)(Math.random() * 400) + 120;
+    
+    private boolean naveBloqueada = false;
+    private long tiempoBloqueo = 0;
 
     public PanelJuego() {
-        // Obtener la cadencia del piloto actual si existe
+        // intervalo del piloto actual si existe
         if (Main.pilotoActual != null) {
-            cadenciaPermitida = Main.pilotoActual.getCadenciaDisparo();
+            intervalo = Main.pilotoActual.getCadenciaDisparo();
         }
 
         // Fondo de color del juego
@@ -78,10 +86,10 @@ class PanelJuego extends JPanel implements ActionListener {
                 if (tecla == KeyEvent.VK_DOWN && naveY < 500) {
                     naveY += 20;
                 }
-                // Disparar con la barra de espacio respetando la cadencia de la nave
+                // Disparar con la barra  espacio 
                 if (tecla == KeyEvent.VK_SPACE) {
                     long tiempoActual = System.currentTimeMillis();
-                    if (!disparoActivo && (tiempoActual - ultimoDisparo >= cadenciaPermitida)) {
+                    if (!disparoActivo && (tiempoActual - ultimoDisparo >= intervalo)) {
                         disparoX = naveX + 35; // desde la punta de la nave
                         disparoY = naveY;      // al centro de la nave
                         disparoActivo = true;
@@ -101,7 +109,7 @@ class PanelJuego extends JPanel implements ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // texto en la parte superior (mostrando también la nave y dificultad si hay piloto)
+        // texto en la parte superior 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 14));
         g.drawString("Quetzal Space Defender", 30, 40);
@@ -125,7 +133,11 @@ class PanelJuego extends JPanel implements ActionListener {
         }
 
         // la nave
-        g.setColor(Color.CYAN);
+        if (naveBloqueada) {
+            g.setColor(Color.RED);
+        } else {
+            g.setColor(Color.CYAN);
+        }
         int[] xPuntos = {naveX, naveX + 35, naveX};
         int[] yPuntos = {naveY + 15, naveY, naveY - 15};
         g.fillPolygon(xPuntos, yPuntos, 3);
@@ -135,7 +147,18 @@ class PanelJuego extends JPanel implements ActionListener {
         g.fillRect(enemigoX, enemigoY, 40, 40);
         g.fillRect(enemigo2X, enemigo2Y, 40, 40);
         
-        // las estrellas de fondo 
+        // Quaffle 
+        g.setColor(Color.YELLOW);
+        g.fillOval(quaffleX, quaffleY, 20, 20);
+
+        // Snitch  
+        g.setColor(Color.WHITE);
+        g.fillOval(snitchX, snitchY, 15, 15);
+
+        g.setColor(Color.GRAY);
+        g.fillOval(bludgerX, bludgerY, 30, 30);
+        
+        // las estrellas de fondo
         g.setColor(Color.WHITE); 
         g.fillRect(200, 150, 2, 2); g.fillRect(234, 765, 2, 3); g.fillRect(190, 431, 2, 3); g.fillRect(334, 121, 2, 2);
         g.fillRect(500, 380, 3, 3); g.fillRect(432, 567, 3, 2); g.fillRect(222, 315, 3, 2); g.fillRect(234, 113, 3, 3);
@@ -148,12 +171,23 @@ class PanelJuego extends JPanel implements ActionListener {
         g.fillRect(153, 455, 3, 2); g.fillRect(123, 321, 2, 3); g.fillRect(211, 112, 2, 3); g.fillRect(234, 631, 3, 2);
     }
 
-    // verifica colisiones 
+    //  colisiones 
     @Override
     public void actionPerformed(ActionEvent e) {
+        
+        // tiempo del bloqueo con Bludger
+        if (naveBloqueada) {
+            if (System.currentTimeMillis() - tiempoBloqueo > 2000) {
+                naveBloqueada = false; // libera la nave a los 2 segundos
+            }
+        }
+        
         // a la izquierda
         enemigoX -= 4; // enemigo 1
         enemigo2X -= 5; // enemigo 2
+        quaffleX -= 3;
+        snitchX -= 7;
+        bludgerX -= 4;
 
         // reiniciar enemigo 1 si pasa de los bordes
         if (enemigoX < -50) {
@@ -168,15 +202,36 @@ class PanelJuego extends JPanel implements ActionListener {
             puntaje += 5;
         }
         
-        // vida
+        // Reiniciar Quaffle
+        if (quaffleX < -50) {
+            quaffleX = 950;
+            quaffleY = (int) (Math.random() * 400) + 120;
+        }
+
+        // Reiniciar Snitch
+        if (snitchX < -50) {
+            snitchX = 1200;
+            snitchY = (int) (Math.random() * 400) + 120;
+        }
+
+        // Reiniciar Bludger
+        if (bludgerX < -50) {
+            bludgerX = 1100;
+            bludgerY = (int) (Math.random() * 400) + 120;
+        }
+        
+        // Rectángulos del choque
         Rectangle rectNave = new Rectangle(naveX, naveY - 15, 35, 30);
         Rectangle rectObs1 = new Rectangle(enemigoX, enemigoY, 40, 40);
         Rectangle rectObs2 = new Rectangle(enemigo2X, enemigo2Y, 40, 40);
+        Rectangle rectQuaffle = new Rectangle(quaffleX, quaffleY, 20, 20);
+        Rectangle rectSnitch = new Rectangle(snitchX, snitchY, 15, 15);
+        Rectangle rectBludger = new Rectangle(bludgerX, bludgerY, 30, 30);
         
         // Si choca con enemigo 1
         if (rectNave.intersects(rectObs1)) {
             vidas--;
-            enemigoX = 850; // para que no quite vidas consecutivas por error
+            enemigoX = 850; 
             enemigoY = (int) (Math.random() * 400) + 120;
         }
 
@@ -187,11 +242,34 @@ class PanelJuego extends JPanel implements ActionListener {
             enemigo2Y = (int) (Math.random() * 400) + 120;
         }
 
-        // muerte
+        // Si choca con la Quaffle 
+        if (rectNave.intersects(rectQuaffle)) {
+            puntaje += 20;
+            quaffleX = 1000;
+            quaffleY = (int) (Math.random() * 400) + 120;
+        }
+        
+        // Si choca con la Snitch 
+        if (rectNave.intersects(rectSnitch)) {
+            puntaje += 50;
+            vidas++; // Vida extra  
+            snitchX = 1400;
+            snitchY = (int) (Math.random() * 400) + 120;
+        }
+
+        // Si choca con la Bludger 
+        if (rectNave.intersects(rectBludger)) {
+            naveBloqueada = true;
+            tiempoBloqueo = System.currentTimeMillis();
+            bludgerX = 1200;
+            bludgerY = (int) (Math.random() * 400) + 120;
+        }
+        
+        // Muerte
         if (vidas <= 0) {
             timer.stop(); // Detiene el bucle del juego
     
-            // guarda el punteo del piloto
+            // guarda el punteo 
             if (Main.pilotoActual != null) {
                 if (puntaje > Main.pilotoActual.getPuntajeMaximo()) {
                     Main.pilotoActual.setPuntajeMaximo(puntaje); // actualiza el maximo
