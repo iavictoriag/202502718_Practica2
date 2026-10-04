@@ -108,5 +108,8 @@ public class Main {
         }
         
         JOptionPane.showMessageDialog(null, reporte);
+        //html
+        ManejoArchivos manejador = new ManejoArchivos();
+        manejador.crearReporteHTML();
     }  
 }
